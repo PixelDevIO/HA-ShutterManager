@@ -1,0 +1,125 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ShutterManager",
+        "description": "Allgemeine Einstellungen. Räume legst du danach über „Konfigurieren“ an.",
+        "data": {
+          "open_delay": "Verzögerung beim Öffnen",
+          "close_delay": "Verzögerung beim Schließen"
+        },
+        "data_description": {
+          "open_delay": "So lange muss ein Fenster offen sein, bevor die Rollläden hochfahren.",
+          "close_delay": "So lange müssen alle Fenster des Raums zu sein, bevor die Rollläden zurückfahren."
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "ShutterManager ist bereits eingerichtet.",
+      "single_instance_allowed": "ShutterManager ist bereits eingerichtet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ShutterManager",
+        "menu_options": {
+          "add_room": "Raum hinzufügen",
+          "edit_room": "Raum bearbeiten",
+          "remove_room": "Räume entfernen",
+          "settings": "Einstellungen"
+        }
+      },
+      "add_room": {
+        "title": "Raum hinzufügen",
+        "data": {
+          "name": "Name",
+          "covers": "Rollläden",
+          "contacts": "Fenster-/Türkontakte",
+          "area": "Bereich"
+        },
+        "data_description": {
+          "covers": "Rollläden dieses Raums.",
+          "contacts": "Ist einer davon offen, fahren geschlossene Rollläden auf ihre Lüftungsposition."
+        }
+      },
+      "edit_room": {
+        "title": "Raum bearbeiten",
+        "data": {
+          "room": "Raum"
+        }
+      },
+      "edit_room_details": {
+        "title": "{room} bearbeiten",
+        "data": {
+          "name": "Name",
+          "covers": "Rollläden",
+          "contacts": "Fenster-/Türkontakte",
+          "area": "Bereich"
+        },
+        "data_description": {
+          "covers": "Rollläden dieses Raums.",
+          "contacts": "Ist einer davon offen, fahren geschlossene Rollläden auf ihre Lüftungsposition."
+        }
+      },
+      "room_positions": {
+        "title": "Lüftungsposition in {room}",
+        "description": "Wie weit jeder Rollladen beim Lüften öffnet, in Prozent (0 = zu, 100 = ganz offen). Wird ein Fenster geöffnet, fahren nur Rollläden hoch, die tiefer stehen. Beim Schließen des Fensters fahren sie auf ihre vorige Position zurück, außer jemand hat sie in der Zwischenzeit bewegt.\n\n{covers}",
+        "data": {
+          "position_1": "Lüftungsposition Rollladen 1",
+          "position_2": "Lüftungsposition Rollladen 2",
+          "position_3": "Lüftungsposition Rollladen 3",
+          "position_4": "Lüftungsposition Rollladen 4",
+          "position_5": "Lüftungsposition Rollladen 5",
+          "position_6": "Lüftungsposition Rollladen 6",
+          "position_7": "Lüftungsposition Rollladen 7",
+          "position_8": "Lüftungsposition Rollladen 8",
+          "position_9": "Lüftungsposition Rollladen 9",
+          "position_10": "Lüftungsposition Rollladen 10"
+        }
+      },
+      "remove_room": {
+        "title": "Räume entfernen",
+        "data": {
+          "rooms": "Zu entfernende Räume"
+        }
+      },
+      "settings": {
+        "title": "Einstellungen",
+        "data": {
+          "open_delay": "Verzögerung beim Öffnen",
+          "close_delay": "Verzögerung beim Schließen"
+        },
+        "data_description": {
+          "open_delay": "So lange muss ein Fenster offen sein, bevor die Rollläden hochfahren.",
+          "close_delay": "So lange müssen alle Fenster des Raums zu sein, bevor die Rollläden zurückfahren."
+        }
+      }
+    },
+    "error": {
+      "no_cover": "Bitte mindestens einen Rollladen wählen.",
+      "too_many_covers": "Höchstens 10 Rollläden je Raum.",
+      "no_contact": "Bitte mindestens einen Fenster- oder Türkontakt wählen.",
+      "name_exists": "Einen Raum mit diesem Namen gibt es schon.",
+      "cover_in_use": "Ein gewählter Rollladen gehört schon zu einem anderen Raum."
+    }
+  },
+  "entity": {
+    "switch": {
+      "ventilation": {
+        "name": "Lüftungsautomatik"
+      }
+    },
+    "sensor": {
+      "status": {
+        "name": "Status",
+        "state": {
+          "idle": "Bereit",
+          "waiting": "Wartet",
+          "venting": "Lüftet",
+          "disabled": "Aus"
+        }
+      }
+    }
+  }
+}

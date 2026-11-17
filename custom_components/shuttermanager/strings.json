@@ -1,0 +1,125 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ShutterManager",
+        "description": "General settings. Add rooms afterwards via “Configure”.",
+        "data": {
+          "open_delay": "Delay after opening",
+          "close_delay": "Delay after closing"
+        },
+        "data_description": {
+          "open_delay": "How long a window must be open before the shutters go up.",
+          "close_delay": "How long all windows of the room must be closed before the shutters go back."
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "ShutterManager is already set up.",
+      "single_instance_allowed": "ShutterManager is already set up."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ShutterManager",
+        "menu_options": {
+          "add_room": "Add room",
+          "edit_room": "Edit room",
+          "remove_room": "Remove rooms",
+          "settings": "Settings"
+        }
+      },
+      "add_room": {
+        "title": "Add room",
+        "data": {
+          "name": "Name",
+          "covers": "Shutters",
+          "contacts": "Window/door contacts",
+          "area": "Area"
+        },
+        "data_description": {
+          "covers": "Shutters of this room.",
+          "contacts": "While one of them is open, closed shutters move to their vent position."
+        }
+      },
+      "edit_room": {
+        "title": "Edit room",
+        "data": {
+          "room": "Room"
+        }
+      },
+      "edit_room_details": {
+        "title": "Edit {room}",
+        "data": {
+          "name": "Name",
+          "covers": "Shutters",
+          "contacts": "Window/door contacts",
+          "area": "Area"
+        },
+        "data_description": {
+          "covers": "Shutters of this room.",
+          "contacts": "While one of them is open, closed shutters move to their vent position."
+        }
+      },
+      "room_positions": {
+        "title": "Vent position in {room}",
+        "description": "How far each shutter opens for ventilation, in percent (0 = closed, 100 = fully open). When a window opens, only shutters below this position go up. When the window closes they return to their previous position, unless someone moved them in the meantime.\n\n{covers}",
+        "data": {
+          "position_1": "Vent position shutter 1",
+          "position_2": "Vent position shutter 2",
+          "position_3": "Vent position shutter 3",
+          "position_4": "Vent position shutter 4",
+          "position_5": "Vent position shutter 5",
+          "position_6": "Vent position shutter 6",
+          "position_7": "Vent position shutter 7",
+          "position_8": "Vent position shutter 8",
+          "position_9": "Vent position shutter 9",
+          "position_10": "Vent position shutter 10"
+        }
+      },
+      "remove_room": {
+        "title": "Remove rooms",
+        "data": {
+          "rooms": "Rooms to remove"
+        }
+      },
+      "settings": {
+        "title": "Settings",
+        "data": {
+          "open_delay": "Delay after opening",
+          "close_delay": "Delay after closing"
+        },
+        "data_description": {
+          "open_delay": "How long a window must be open before the shutters go up.",
+          "close_delay": "How long all windows of the room must be closed before the shutters go back."
+        }
+      }
+    },
+    "error": {
+      "no_cover": "Please choose at least one shutter.",
+      "too_many_covers": "At most 10 shutters per room.",
+      "no_contact": "Please choose at least one window or door contact.",
+      "name_exists": "A room with this name already exists.",
+      "cover_in_use": "A chosen shutter already belongs to another room."
+    }
+  },
+  "entity": {
+    "switch": {
+      "ventilation": {
+        "name": "Ventilation"
+      }
+    },
+    "sensor": {
+      "status": {
+        "name": "Status",
+        "state": {
+          "idle": "Idle",
+          "waiting": "Waiting",
+          "venting": "Venting",
+          "disabled": "Off"
+        }
+      }
+    }
+  }
+}
