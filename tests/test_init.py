@@ -359,11 +359,11 @@ async def test_no_lockout_when_window_closed(hass: HomeAssistant, freezer: Froze
     assert covers.calls == []
 
 
-async def test_lockout_off(hass: HomeAssistant, freezer: FrozenDateTimeFactory, setup) -> None:
+async def test_no_hold_when_ventilation_is_off(hass: HomeAssistant, freezer: FrozenDateTimeFactory, setup) -> None:
     manager, covers, _ = setup
-    manager.rooms["r1"].lockout = False
+    manager.set_enabled("r1", False)
     await set_contact(hass, DOOR, "on")
     await tick(hass, freezer, 3)
     cover(hass, RIGHT, 0, "closed")
     await hass.async_block_till_done()
-    assert covers.summary() == [("set_cover_position", LEFT, 30)]
+    assert covers.calls == []

@@ -43,5 +43,5 @@ class RoomStatusSensor(ShutterManagerEntity, SensorEntity):
             "open_contacts": info["open_contacts"],
             "vented_covers": sorted(info["vented"]),
             "vent_positions": info["vent_positions"],
-            "lockout": info["lockout"],
+            "door_covers": info["door_covers"],
         }

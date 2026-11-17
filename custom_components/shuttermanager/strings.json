@@ -34,17 +34,13 @@
         "title": "Add room",
         "data": {
           "name": "Name",
-          "covers": "Shutters",
-          "contacts": "Window contacts",
-          "door_contacts": "Door contacts",
           "area": "Area",
-          "lockout": "Keep vent position"
+          "covers": "Shutters",
+          "contacts": "Window/door contacts"
         },
         "data_description": {
           "covers": "Shutters of this room.",
-          "contacts": "While one is open, closed shutters move to their vent position.",
-          "lockout": "While a window is open no shutter goes below its vent position, not even by button, app, plan or automation. The command is carried out once all contacts are closed. Door shutters are always protected.",
-          "door_contacts": "Patio or balcony doors. While one is open, the door shutters go up to the door position and nothing can lower them, so nobody gets locked out."
+          "contacts": "Window and door contacts of this room. Which contact opens which shutter is set in the next step."
         }
       },
       "edit_room": {
@@ -57,39 +53,49 @@
         "title": "Edit {room}",
         "data": {
           "name": "Name",
-          "covers": "Shutters",
-          "contacts": "Window contacts",
-          "door_contacts": "Door contacts",
           "area": "Area",
-          "lockout": "Keep vent position"
+          "covers": "Shutters",
+          "contacts": "Window/door contacts"
         },
         "data_description": {
           "covers": "Shutters of this room.",
-          "contacts": "While one is open, closed shutters move to their vent position.",
-          "lockout": "While a window is open no shutter goes below its vent position, not even by button, app, plan or automation. The command is carried out once all contacts are closed. Door shutters are always protected.",
-          "door_contacts": "Patio or balcony doors. While one is open, the door shutters go up to the door position and nothing can lower them, so nobody gets locked out."
+          "contacts": "Window and door contacts of this room. Which contact opens which shutter is set in the next step."
         }
       },
-      "room_positions": {
-        "title": "Vent position in {room}",
-        "description": "How far each shutter opens for ventilation, in percent (0 = closed, 100 = fully open). When a window opens, only shutters below this position go up. When the window closes they return to their previous position, unless someone moved them in the meantime.\n\n{covers}",
+      "room_covers": {
+        "title": "Shutters in {room}",
+        "description": "For each shutter: which contact opens it, whether it is in front of a window or a door, and how far it opens then (0 = closed, 100 = fully open; empty: 30 % for a window, 100 % for a door).\n\nWhile the contact is open, the shutter moves to this position and stays there, also against buttons, app, plan and automations. The last command is carried out once the contact is closed again. For a door this keeps you from being locked out.\n\n{covers}",
         "data": {
-          "position_1": "Vent position shutter 1",
-          "position_2": "Vent position shutter 2",
-          "position_3": "Vent position shutter 3",
-          "position_4": "Vent position shutter 4",
-          "position_5": "Vent position shutter 5",
-          "position_6": "Vent position shutter 6",
-          "position_7": "Vent position shutter 7",
-          "position_8": "Vent position shutter 8",
-          "position_9": "Vent position shutter 9",
-          "position_10": "Vent position shutter 10",
-          "door_position": "Door position",
-          "door_covers": "Door shutters"
-        },
-        "data_description": {
-          "door_position": "How far the door shutters open while a door is open.",
-          "door_covers": "Shutters in front of a door. None chosen: all shutters of the room."
+          "contact_1": "Contact shutter 1",
+          "kind_1": "Kind shutter 1",
+          "position_1": "Position shutter 1",
+          "contact_2": "Contact shutter 2",
+          "kind_2": "Kind shutter 2",
+          "position_2": "Position shutter 2",
+          "contact_3": "Contact shutter 3",
+          "kind_3": "Kind shutter 3",
+          "position_3": "Position shutter 3",
+          "contact_4": "Contact shutter 4",
+          "kind_4": "Kind shutter 4",
+          "position_4": "Position shutter 4",
+          "contact_5": "Contact shutter 5",
+          "kind_5": "Kind shutter 5",
+          "position_5": "Position shutter 5",
+          "contact_6": "Contact shutter 6",
+          "kind_6": "Kind shutter 6",
+          "position_6": "Position shutter 6",
+          "contact_7": "Contact shutter 7",
+          "kind_7": "Kind shutter 7",
+          "position_7": "Position shutter 7",
+          "contact_8": "Contact shutter 8",
+          "kind_8": "Kind shutter 8",
+          "position_8": "Position shutter 8",
+          "contact_9": "Contact shutter 9",
+          "kind_9": "Kind shutter 9",
+          "position_9": "Position shutter 9",
+          "contact_10": "Contact shutter 10",
+          "kind_10": "Kind shutter 10",
+          "position_10": "Position shutter 10"
         }
       },
       "remove_room": {
@@ -113,10 +119,9 @@
     "error": {
       "no_cover": "Please choose at least one shutter.",
       "too_many_covers": "At most 10 shutters per room.",
-      "no_contact": "Please choose at least one window or door contact.",
+      "no_contact": "Please select at least one window or door contact.",
       "name_exists": "A room with this name already exists.",
-      "cover_in_use": "A chosen shutter already belongs to another room.",
-      "contact_twice": "A contact can be a window or a door contact, not both."
+      "cover_in_use": "A chosen shutter already belongs to another room."
     }
   },
   "entity": {
@@ -190,6 +195,19 @@
           "name": "Room",
           "description": "Room name or id."
         }
+      }
+    }
+  },
+  "selector": {
+    "contact": {
+      "options": {
+        "any": "Any contact of the room"
+      }
+    },
+    "kind": {
+      "options": {
+        "window": "Window",
+        "door": "Door"
       }
     }
   }

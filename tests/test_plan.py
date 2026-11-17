@@ -154,41 +154,58 @@ async def test_deleting_a_plan_sets_rooms_manual(hass: HomeAssistant, freezer: F
 
 
 async def test_door_keeps_door_shutter_up(hass: HomeAssistant, freezer: FrozenDateTimeFactory) -> None:
+    # a room from 0.3.0: one door contact in front of the right shutter
     manager, covers = await make(
         hass, freezer, lockout=False, door_contacts=[DOOR], door_covers=[RIGHT], door_position=100
     )
     room = manager.rooms["r1"]
     assert room.contacts == [WINDOW, DOOR]
+    assert room.settings[RIGHT].as_dict() == {"contact": DOOR, "kind": "door", "position": 100}
+    assert room.settings[LEFT].as_dict() == {"contact": None, "kind": "window", "position": 30}
     await set_contact(hass, DOOR, "on")
     await tick(hass, freezer, 3)
     assert sorted(covers.summary()) == [("set_cover_position", LEFT, 30), ("set_cover_position", RIGHT, 100)]
 
-    # without "keep vent position" the window shutter may go down, the door shutter not
+    # both stay where they are while the door is open
     await tick(hass, freezer, 15)
     await hass.services.async_call("cover", "close_cover", {"entity_id": LEFT}, blocking=True)
     await hass.services.async_call("cover", "close_cover", {"entity_id": RIGHT}, blocking=True)
     await hass.async_block_till_done()
-    assert hass.states.get(LEFT).attributes["current_position"] == 0
+    assert hass.states.get(LEFT).attributes["current_position"] == 30
     assert hass.states.get(RIGHT).attributes["current_position"] == 100
 
     await set_contact(hass, DOOR, "off")
     await tick(hass, freezer, 5)
     # what was asked while the door was open happens now
+    assert hass.states.get(LEFT).attributes["current_position"] == 0
     assert hass.states.get(RIGHT).attributes["current_position"] == 0
 
 
-async def test_door_opened_after_window_raises_further(hass: HomeAssistant, freezer: FrozenDateTimeFactory) -> None:
-    manager, covers = await make(hass, freezer, door_contacts=[DOOR], door_covers=[], door_position=80)
+async def test_each_shutter_follows_its_own_contact(hass: HomeAssistant, freezer: FrozenDateTimeFactory) -> None:
+    settings = {
+        LEFT: {"contact": WINDOW, "kind": "window", "position": 30},
+        RIGHT: {"contact": DOOR, "kind": "door", "position": 80},
+    }
+    manager, covers = await make(hass, freezer, contacts=[WINDOW, DOOR], cover_settings=settings)
     cover(hass, RIGHT, 0)
     await set_contact(hass, WINDOW, "on")
     await tick(hass, freezer, 3)
-    assert hass.states.get(RIGHT).attributes["current_position"] == 30
+    assert hass.states.get(LEFT).attributes["current_position"] == 30
+    assert hass.states.get(RIGHT).attributes["current_position"] == 0
+    # the window does not hold the door shutter
+    await hass.services.async_call("cover", "open_cover", {"entity_id": RIGHT}, blocking=True)
+    await hass.services.async_call("cover", "close_cover", {"entity_id": RIGHT}, blocking=True)
+    await hass.async_block_till_done()
+    assert hass.states.get(RIGHT).attributes["current_position"] == 0
+
     await set_contact(hass, DOOR, "on")
-    # no door covers chosen: all shutters of the room are door shutters
-    assert hass.states.get(LEFT).attributes["current_position"] == 80
+    await tick(hass, freezer, 3)
     assert hass.states.get(RIGHT).attributes["current_position"] == 80
-    await set_contact(hass, DOOR, "off")
+    assert manager.room_info(manager.rooms["r1"])["door_covers"] == [RIGHT]
     await set_contact(hass, WINDOW, "off")
     await tick(hass, freezer, 5)
     assert hass.states.get(LEFT).attributes["current_position"] == 0
+    assert hass.states.get(RIGHT).attributes["current_position"] == 80
+    await set_contact(hass, DOOR, "off")
+    await tick(hass, freezer, 5)
     assert hass.states.get(RIGHT).attributes["current_position"] == 0

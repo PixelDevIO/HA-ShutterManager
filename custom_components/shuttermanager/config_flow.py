@@ -13,27 +13,32 @@ import voluptuous as vol
 from .const import (
     CONF_AREA,
     CONF_CLOSE_DELAY,
+    CONF_CONTACT,
     CONF_CONTACTS,
+    CONF_COVER_SETTINGS,
     CONF_COVERS,
     CONF_DOOR_CONTACTS,
-    CONF_DOOR_COVERS,
-    CONF_DOOR_POSITION,
-    CONF_LOCKOUT,
+    CONF_KIND,
     CONF_OPEN_DELAY,
+    CONF_POSITION,
     CONF_ROOM_ID,
     CONF_ROOM_NAME,
     CONF_ROOMS,
-    CONF_VENT_POSITIONS,
+    CONTACT_ANY,
     DEFAULT_CLOSE_DELAY,
     DEFAULT_DOOR_POSITION,
     DEFAULT_OPEN_DELAY,
     DEFAULT_VENT_POSITION,
     DOMAIN,
+    KIND_DOOR,
+    KIND_WINDOW,
+    KINDS,
     NAME,
 )
+from .manager import cover_settings
 
 CONF_ROOM = "room"
-# vent position fields are numbered (position_1 …) so they get proper labels
+# per-cover fields are numbered (contact_1, kind_1, position_1 …) so they get proper labels
 MAX_COVERS = 10
 
 
@@ -56,21 +61,19 @@ def _settings_schema(open_delay: int, close_delay: int) -> vol.Schema:
 
 def _room_schema(room: dict[str, Any] | None = None) -> vol.Schema:
     room = room or {}
-    schema: dict[Any, Any] = {
-        vol.Required(CONF_ROOM_NAME, default=room.get(CONF_ROOM_NAME, vol.UNDEFINED)): selector.TextSelector(),
-        vol.Required(CONF_COVERS, default=room.get(CONF_COVERS, vol.UNDEFINED)): selector.EntitySelector(
-            selector.EntitySelectorConfig(domain="cover", multiple=True)
-        ),
-    }
-    # window and door contacts are both optional here, _validate wants at least one
-    for key in (CONF_CONTACTS, CONF_DOOR_CONTACTS):
-        schema[vol.Optional(key, description={"suggested_value": room.get(key) or []})] = selector.EntitySelector(
-            selector.EntitySelectorConfig(domain="binary_sensor", multiple=True)
-        )
-    schema[vol.Optional(CONF_AREA, description={"suggested_value": room.get(CONF_AREA)})] = selector.AreaSelector()
-    # new rooms get lockout protection, rooms from before it existed keep it off until switched on
-    schema[vol.Required(CONF_LOCKOUT, default=bool(room.get(CONF_LOCKOUT, not room)))] = selector.BooleanSelector()
-    return vol.Schema(schema)
+    contacts = list(dict.fromkeys([*(room.get(CONF_CONTACTS) or []), *(room.get(CONF_DOOR_CONTACTS) or [])]))
+    return vol.Schema(
+        {
+            vol.Required(CONF_ROOM_NAME, default=room.get(CONF_ROOM_NAME, vol.UNDEFINED)): selector.TextSelector(),
+            vol.Optional(CONF_AREA, description={"suggested_value": room.get(CONF_AREA)}): selector.AreaSelector(),
+            vol.Required(CONF_COVERS, default=room.get(CONF_COVERS, vol.UNDEFINED)): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain="cover", multiple=True)
+            ),
+            vol.Required(CONF_CONTACTS, default=contacts or vol.UNDEFINED): selector.EntitySelector(
+                selector.EntitySelectorConfig(domain="binary_sensor", multiple=True)
+            ),
+        }
+    )
 
 
 class ShutterManagerConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -129,10 +132,8 @@ class ShutterManagerOptionsFlow(OptionsFlow):
             return {CONF_COVERS: "no_cover"}
         if len(room[CONF_COVERS]) > MAX_COVERS:
             return {CONF_COVERS: "too_many_covers"}
-        if not room[CONF_CONTACTS] and not room[CONF_DOOR_CONTACTS]:
+        if not room[CONF_CONTACTS]:
             return {CONF_CONTACTS: "no_contact"}
-        if set(room[CONF_CONTACTS]) & set(room[CONF_DOOR_CONTACTS]):
-            return {CONF_DOOR_CONTACTS: "contact_twice"}
         if any(r[CONF_ROOM_NAME].casefold() == room[CONF_ROOM_NAME].casefold() for r in others):
             return {CONF_ROOM_NAME: "name_exists"}
         # one cover belongs to one room, otherwise two rooms would fight over it
@@ -147,46 +148,57 @@ class ShutterManagerOptionsFlow(OptionsFlow):
             room = self._clean_room(user_input, uuid.uuid4().hex[:8])
             if not (errors := self._validate(room)):
                 self._pending = room
-                return await self.async_step_room_positions()
+                return await self.async_step_room_covers()
         return self.async_show_form(step_id="add_room", data_schema=_room_schema(user_input), errors=errors)
 
-    async def async_step_room_positions(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
-        """Vent position per cover (percent open), and the door settings if the room has door contacts."""
+    async def async_step_room_covers(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """Per shutter: the contact in front of it, window or door, and its position."""
         room = self._pending
         numbered = list(enumerate(room[CONF_COVERS], 1))
-        has_door = bool(room[CONF_DOOR_CONTACTS])
         if user_input is not None:
-            room[CONF_VENT_POSITIONS] = {c: int(user_input[f"position_{i}"]) for i, c in numbered}
-            if has_door:
-                room[CONF_DOOR_POSITION] = int(user_input[CONF_DOOR_POSITION])
-                chosen = set(user_input.get(CONF_DOOR_COVERS) or [])
-                room[CONF_DOOR_COVERS] = [c for c in room[CONF_COVERS] if c in chosen]
-            else:
-                room[CONF_DOOR_POSITION] = int(room.get(CONF_DOOR_POSITION, DEFAULT_DOOR_POSITION))
-                room[CONF_DOOR_COVERS] = []
+            settings = {}
+            for i, cover in numbered:
+                kind = user_input.get(f"kind_{i}", KIND_WINDOW)
+                contact = user_input.get(f"contact_{i}", CONTACT_ANY)
+                position = user_input.get(f"position_{i}")
+                if position is None:
+                    position = DEFAULT_DOOR_POSITION if kind == KIND_DOOR else DEFAULT_VENT_POSITION
+                settings[cover] = {
+                    CONF_CONTACT: contact if contact in room[CONF_CONTACTS] else None,
+                    CONF_KIND: kind if kind in KINDS else KIND_WINDOW,
+                    CONF_POSITION: int(position),
+                }
+            room[CONF_COVER_SETTINGS] = settings
             return self._store_room(room)
-        current = room.get(CONF_VENT_POSITIONS) or {}
-        schema: dict[Any, Any] = {
-            vol.Required(f"position_{i}", default=int(current.get(c, DEFAULT_VENT_POSITION))): _box(1, 100, 1, "%")
-            for i, c in numbered
-        }
-        names = {c: st.name if (st := self.hass.states.get(c)) else c for c in room[CONF_COVERS]}
-        if has_door:
-            schema[
-                vol.Required(CONF_DOOR_POSITION, default=int(room.get(CONF_DOOR_POSITION, DEFAULT_DOOR_POSITION)))
-            ] = _box(1, 100, 1, "%")
-            door_covers = [c for c in room.get(CONF_DOOR_COVERS) or [] if c in names]
-            schema[vol.Optional(CONF_DOOR_COVERS, description={"suggested_value": door_covers})] = (
-                selector.SelectSelector(
-                    selector.SelectSelectorConfig(
-                        options=[selector.SelectOptionDict(value=c, label=n) for c, n in names.items()],
-                        multiple=True,
-                    )
-                )
+        current = room.pop("_current", {})
+        names = {e: st.name if (st := self.hass.states.get(e)) else e for e in room[CONF_COVERS] + room[CONF_CONTACTS]}
+        contact_choice = selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=[selector.SelectOptionDict(value=CONTACT_ANY, label=CONTACT_ANY)]
+                + [selector.SelectOptionDict(value=c, label=names[c]) for c in room[CONF_CONTACTS]],
+                mode=selector.SelectSelectorMode.DROPDOWN,
+                translation_key="contact",
             )
+        )
+        kind_choice = selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=list(KINDS), mode=selector.SelectSelectorMode.LIST, translation_key="kind"
+            )
+        )
+        schema: dict[Any, Any] = {}
+        for i, cover in numbered:
+            setting = current.get(cover)
+            contact = setting.contact if setting and setting.contact in room[CONF_CONTACTS] else None
+            if contact is None and len(room[CONF_CONTACTS]) == 1:
+                contact = room[CONF_CONTACTS][0]
+            schema[vol.Required(f"contact_{i}", default=contact or CONTACT_ANY)] = contact_choice
+            schema[vol.Required(f"kind_{i}", default=setting.kind if setting else KIND_WINDOW)] = kind_choice
+            # empty: 30 % for a window, 100 % for a door
+            suggested = setting.position if setting else None
+            schema[vol.Optional(f"position_{i}", description={"suggested_value": suggested})] = _box(1, 100, 1, "%")
         legend = "\n".join(f"{i} = {names[c]}" for i, c in numbered)
         return self.async_show_form(
-            step_id="room_positions",
+            step_id="room_covers",
             data_schema=vol.Schema(schema),
             description_placeholders={"room": room[CONF_ROOM_NAME], "covers": legend},
         )
@@ -223,12 +235,10 @@ class ShutterManagerOptionsFlow(OptionsFlow):
         if user_input is not None:
             room = self._clean_room(user_input, current[CONF_ROOM_ID])
             if not (errors := self._validate(room)):
-                # keep the vent positions and door settings of covers that stay in the room
-                room[CONF_VENT_POSITIONS] = current.get(CONF_VENT_POSITIONS) or {}
-                room[CONF_DOOR_COVERS] = current.get(CONF_DOOR_COVERS) or []
-                room[CONF_DOOR_POSITION] = current.get(CONF_DOOR_POSITION, DEFAULT_DOOR_POSITION)
+                # the settings of shutters that stay in the room are kept
+                room["_current"] = cover_settings(current)
                 self._pending = room
-                return await self.async_step_room_positions()
+                return await self.async_step_room_covers()
         return self.async_show_form(
             step_id="edit_room_details",
             data_schema=_room_schema(user_input or current),
@@ -267,7 +277,5 @@ class ShutterManagerOptionsFlow(OptionsFlow):
             CONF_ROOM_NAME: str(user_input[CONF_ROOM_NAME]).strip(),
             CONF_COVERS: list(user_input.get(CONF_COVERS) or []),
             CONF_CONTACTS: list(user_input.get(CONF_CONTACTS) or []),
-            CONF_DOOR_CONTACTS: list(user_input.get(CONF_DOOR_CONTACTS) or []),
             CONF_AREA: user_input.get(CONF_AREA) or None,
-            CONF_LOCKOUT: bool(user_input.get(CONF_LOCKOUT, False)),
         }

@@ -34,17 +34,13 @@
         "title": "Raum hinzufügen",
         "data": {
           "name": "Name",
-          "covers": "Rollläden",
-          "contacts": "Fensterkontakte",
-          "door_contacts": "Türkontakte",
           "area": "Bereich",
-          "lockout": "Lüftungsposition halten"
+          "covers": "Rollläden",
+          "contacts": "Fenster-/Türkontakte"
         },
         "data_description": {
           "covers": "Rollläden dieses Raums.",
-          "contacts": "Ist einer davon offen, fahren geschlossene Rollläden auf ihre Lüftungsposition.",
-          "lockout": "Solange ein Fenster offen ist, fährt kein Rollladen unter seine Lüftungsposition, auch nicht per Taster, App, Plan oder Automation. Der Fahrbefehl wird nachgeholt, sobald alle Kontakte zu sind. Tür-Rollläden sind immer geschützt.",
-          "door_contacts": "Terrassen- oder Balkontüren. Ist eine offen, fahren die Tür-Rollläden auf die Türposition und lassen sich nicht herunterfahren, damit sich niemand aussperrt."
+          "contacts": "Fenster- und Türkontakte dieses Raums. Welcher Kontakt welchen Rollladen öffnet, legst du im nächsten Schritt fest."
         }
       },
       "edit_room": {
@@ -57,39 +53,49 @@
         "title": "{room} bearbeiten",
         "data": {
           "name": "Name",
-          "covers": "Rollläden",
-          "contacts": "Fensterkontakte",
-          "door_contacts": "Türkontakte",
           "area": "Bereich",
-          "lockout": "Lüftungsposition halten"
+          "covers": "Rollläden",
+          "contacts": "Fenster-/Türkontakte"
         },
         "data_description": {
           "covers": "Rollläden dieses Raums.",
-          "contacts": "Ist einer davon offen, fahren geschlossene Rollläden auf ihre Lüftungsposition.",
-          "lockout": "Solange ein Fenster offen ist, fährt kein Rollladen unter seine Lüftungsposition, auch nicht per Taster, App, Plan oder Automation. Der Fahrbefehl wird nachgeholt, sobald alle Kontakte zu sind. Tür-Rollläden sind immer geschützt.",
-          "door_contacts": "Terrassen- oder Balkontüren. Ist eine offen, fahren die Tür-Rollläden auf die Türposition und lassen sich nicht herunterfahren, damit sich niemand aussperrt."
+          "contacts": "Fenster- und Türkontakte dieses Raums. Welcher Kontakt welchen Rollladen öffnet, legst du im nächsten Schritt fest."
         }
       },
-      "room_positions": {
-        "title": "Lüftungsposition in {room}",
-        "description": "Wie weit jeder Rollladen beim Lüften öffnet, in Prozent (0 = zu, 100 = ganz offen). Wird ein Fenster geöffnet, fahren nur Rollläden hoch, die tiefer stehen. Beim Schließen des Fensters fahren sie auf ihre vorige Position zurück, außer jemand hat sie in der Zwischenzeit bewegt.\n\n{covers}",
+      "room_covers": {
+        "title": "Rollläden in {room}",
+        "description": "Für jeden Rollladen: welcher Kontakt ihn öffnet, ob er vor einem Fenster oder einer Tür sitzt und wie weit er dann öffnet (0 = zu, 100 = ganz offen; leer: 30 % beim Fenster, 100 % bei der Tür).\n\nSolange der Kontakt offen ist, fährt der Rollladen auf diese Position und bleibt dort, auch gegen Taster, App, Plan und Automation. Der letzte Fahrbefehl wird nachgeholt, sobald der Kontakt wieder zu ist. Bei einer Tür schützt das vor dem Aussperren.\n\n{covers}",
         "data": {
-          "position_1": "Lüftungsposition Rollladen 1",
-          "position_2": "Lüftungsposition Rollladen 2",
-          "position_3": "Lüftungsposition Rollladen 3",
-          "position_4": "Lüftungsposition Rollladen 4",
-          "position_5": "Lüftungsposition Rollladen 5",
-          "position_6": "Lüftungsposition Rollladen 6",
-          "position_7": "Lüftungsposition Rollladen 7",
-          "position_8": "Lüftungsposition Rollladen 8",
-          "position_9": "Lüftungsposition Rollladen 9",
-          "position_10": "Lüftungsposition Rollladen 10",
-          "door_position": "Türposition",
-          "door_covers": "Tür-Rollläden"
-        },
-        "data_description": {
-          "door_position": "So weit öffnen die Tür-Rollläden, solange eine Tür offen ist.",
-          "door_covers": "Rollläden vor einer Tür. Keiner gewählt: alle Rollläden des Raums."
+          "contact_1": "Kontakt Rollladen 1",
+          "kind_1": "Art Rollladen 1",
+          "position_1": "Position Rollladen 1",
+          "contact_2": "Kontakt Rollladen 2",
+          "kind_2": "Art Rollladen 2",
+          "position_2": "Position Rollladen 2",
+          "contact_3": "Kontakt Rollladen 3",
+          "kind_3": "Art Rollladen 3",
+          "position_3": "Position Rollladen 3",
+          "contact_4": "Kontakt Rollladen 4",
+          "kind_4": "Art Rollladen 4",
+          "position_4": "Position Rollladen 4",
+          "contact_5": "Kontakt Rollladen 5",
+          "kind_5": "Art Rollladen 5",
+          "position_5": "Position Rollladen 5",
+          "contact_6": "Kontakt Rollladen 6",
+          "kind_6": "Art Rollladen 6",
+          "position_6": "Position Rollladen 6",
+          "contact_7": "Kontakt Rollladen 7",
+          "kind_7": "Art Rollladen 7",
+          "position_7": "Position Rollladen 7",
+          "contact_8": "Kontakt Rollladen 8",
+          "kind_8": "Art Rollladen 8",
+          "position_8": "Position Rollladen 8",
+          "contact_9": "Kontakt Rollladen 9",
+          "kind_9": "Art Rollladen 9",
+          "position_9": "Position Rollladen 9",
+          "contact_10": "Kontakt Rollladen 10",
+          "kind_10": "Art Rollladen 10",
+          "position_10": "Position Rollladen 10"
         }
       },
       "remove_room": {
@@ -115,8 +121,7 @@
       "too_many_covers": "Höchstens 10 Rollläden je Raum.",
       "no_contact": "Bitte mindestens einen Fenster- oder Türkontakt wählen.",
       "name_exists": "Einen Raum mit diesem Namen gibt es schon.",
-      "cover_in_use": "Ein gewählter Rollladen gehört schon zu einem anderen Raum.",
-      "contact_twice": "Ein Kontakt ist entweder Fenster- oder Türkontakt, nicht beides."
+      "cover_in_use": "Ein gewählter Rollladen gehört schon zu einem anderen Raum."
     }
   },
   "entity": {
@@ -190,6 +195,19 @@
           "name": "Raum",
           "description": "Name oder ID des Raums."
         }
+      }
+    }
+  },
+  "selector": {
+    "contact": {
+      "options": {
+        "any": "Alle Kontakte des Raums"
+      }
+    },
+    "kind": {
+      "options": {
+        "window": "Fenster",
+        "door": "Tür"
       }
     }
   }
