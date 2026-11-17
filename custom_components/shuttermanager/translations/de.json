@@ -35,14 +35,16 @@
         "data": {
           "name": "Name",
           "covers": "Rollläden",
-          "contacts": "Fenster-/Türkontakte",
+          "contacts": "Fensterkontakte",
+          "door_contacts": "Türkontakte",
           "area": "Bereich",
-          "lockout": "Aussperrschutz"
+          "lockout": "Lüftungsposition halten"
         },
         "data_description": {
           "covers": "Rollläden dieses Raums.",
           "contacts": "Ist einer davon offen, fahren geschlossene Rollläden auf ihre Lüftungsposition.",
-          "lockout": "Solange ein Kontakt offen ist, fährt kein Rollladen unter seine Lüftungsposition, auch nicht per Taster, App oder Automation. Der Fahrbefehl wird nachgeholt, sobald alle Kontakte zu sind."
+          "lockout": "Solange ein Fenster offen ist, fährt kein Rollladen unter seine Lüftungsposition, auch nicht per Taster, App, Plan oder Automation. Der Fahrbefehl wird nachgeholt, sobald alle Kontakte zu sind. Tür-Rollläden sind immer geschützt.",
+          "door_contacts": "Terrassen- oder Balkontüren. Ist eine offen, fahren die Tür-Rollläden auf die Türposition und lassen sich nicht herunterfahren, damit sich niemand aussperrt."
         }
       },
       "edit_room": {
@@ -56,14 +58,16 @@
         "data": {
           "name": "Name",
           "covers": "Rollläden",
-          "contacts": "Fenster-/Türkontakte",
+          "contacts": "Fensterkontakte",
+          "door_contacts": "Türkontakte",
           "area": "Bereich",
-          "lockout": "Aussperrschutz"
+          "lockout": "Lüftungsposition halten"
         },
         "data_description": {
           "covers": "Rollläden dieses Raums.",
           "contacts": "Ist einer davon offen, fahren geschlossene Rollläden auf ihre Lüftungsposition.",
-          "lockout": "Solange ein Kontakt offen ist, fährt kein Rollladen unter seine Lüftungsposition, auch nicht per Taster, App oder Automation. Der Fahrbefehl wird nachgeholt, sobald alle Kontakte zu sind."
+          "lockout": "Solange ein Fenster offen ist, fährt kein Rollladen unter seine Lüftungsposition, auch nicht per Taster, App, Plan oder Automation. Der Fahrbefehl wird nachgeholt, sobald alle Kontakte zu sind. Tür-Rollläden sind immer geschützt.",
+          "door_contacts": "Terrassen- oder Balkontüren. Ist eine offen, fahren die Tür-Rollläden auf die Türposition und lassen sich nicht herunterfahren, damit sich niemand aussperrt."
         }
       },
       "room_positions": {
@@ -79,7 +83,13 @@
           "position_7": "Lüftungsposition Rollladen 7",
           "position_8": "Lüftungsposition Rollladen 8",
           "position_9": "Lüftungsposition Rollladen 9",
-          "position_10": "Lüftungsposition Rollladen 10"
+          "position_10": "Lüftungsposition Rollladen 10",
+          "door_position": "Türposition",
+          "door_covers": "Tür-Rollläden"
+        },
+        "data_description": {
+          "door_position": "So weit öffnen die Tür-Rollläden, solange eine Tür offen ist.",
+          "door_covers": "Rollläden vor einer Tür. Keiner gewählt: alle Rollläden des Raums."
         }
       },
       "remove_room": {
@@ -105,13 +115,17 @@
       "too_many_covers": "Höchstens 10 Rollläden je Raum.",
       "no_contact": "Bitte mindestens einen Fenster- oder Türkontakt wählen.",
       "name_exists": "Einen Raum mit diesem Namen gibt es schon.",
-      "cover_in_use": "Ein gewählter Rollladen gehört schon zu einem anderen Raum."
+      "cover_in_use": "Ein gewählter Rollladen gehört schon zu einem anderen Raum.",
+      "contact_twice": "Ein Kontakt ist entweder Fenster- oder Türkontakt, nicht beides."
     }
   },
   "entity": {
     "switch": {
       "ventilation": {
         "name": "Lüftungsautomatik"
+      },
+      "pause": {
+        "name": "Zeitplan pausiert"
       }
     },
     "sensor": {
@@ -122,6 +136,59 @@
           "waiting": "Wartet",
           "venting": "Lüftet",
           "disabled": "Aus"
+        }
+      }
+    },
+    "select": {
+      "profile": {
+        "name": "Plan"
+      }
+    }
+  },
+  "services": {
+    "pause": {
+      "name": "Zeitplan pausieren",
+      "description": "Pausiert alle Rollladenpläne. Lüften und Aussperrschutz arbeiten weiter. Ohne Dauer oder Ende bis zum Fortsetzen.",
+      "fields": {
+        "duration": {
+          "name": "Dauer",
+          "description": "Wie lange pausiert wird."
+        },
+        "until": {
+          "name": "Bis",
+          "description": "Wann die Pause endet."
+        }
+      }
+    },
+    "resume": {
+      "name": "Zeitplan fortsetzen",
+      "description": "Beendet die Pause. Die Rollläden fahren wieder beim nächsten Planwechsel."
+    },
+    "start_vacation": {
+      "name": "Urlaub starten",
+      "description": "Alle Räume mit Plan folgen bis zum Ende dem Urlaubsplan.",
+      "fields": {
+        "until": {
+          "name": "Bis",
+          "description": "Wann der Urlaub endet."
+        },
+        "random": {
+          "name": "Zufällige Verzögerung",
+          "description": "Jede Fahrt passiert bis zu so viele Minuten später, damit das Haus nicht leer wirkt."
+        }
+      }
+    },
+    "end_vacation": {
+      "name": "Urlaub beenden",
+      "description": "Die Räume folgen wieder ihren eigenen Plänen."
+    },
+    "apply_plan": {
+      "name": "Plan jetzt anwenden",
+      "description": "Fährt die Rollläden eines Raums dorthin, wo sein Plan sie gerade vorsieht.",
+      "fields": {
+        "room": {
+          "name": "Raum",
+          "description": "Name oder ID des Raums."
         }
       }
     }

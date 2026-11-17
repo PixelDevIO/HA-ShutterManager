@@ -15,6 +15,9 @@ from .const import (
     CONF_CLOSE_DELAY,
     CONF_CONTACTS,
     CONF_COVERS,
+    CONF_DOOR_CONTACTS,
+    CONF_DOOR_COVERS,
+    CONF_DOOR_POSITION,
     CONF_LOCKOUT,
     CONF_OPEN_DELAY,
     CONF_ROOM_ID,
@@ -22,6 +25,7 @@ from .const import (
     CONF_ROOMS,
     CONF_VENT_POSITIONS,
     DEFAULT_CLOSE_DELAY,
+    DEFAULT_DOOR_POSITION,
     DEFAULT_OPEN_DELAY,
     DEFAULT_VENT_POSITION,
     DOMAIN,
@@ -57,10 +61,12 @@ def _room_schema(room: dict[str, Any] | None = None) -> vol.Schema:
         vol.Required(CONF_COVERS, default=room.get(CONF_COVERS, vol.UNDEFINED)): selector.EntitySelector(
             selector.EntitySelectorConfig(domain="cover", multiple=True)
         ),
-        vol.Required(CONF_CONTACTS, default=room.get(CONF_CONTACTS, vol.UNDEFINED)): selector.EntitySelector(
-            selector.EntitySelectorConfig(domain="binary_sensor", multiple=True)
-        ),
     }
+    # window and door contacts are both optional here, _validate wants at least one
+    for key in (CONF_CONTACTS, CONF_DOOR_CONTACTS):
+        schema[vol.Optional(key, description={"suggested_value": room.get(key) or []})] = selector.EntitySelector(
+            selector.EntitySelectorConfig(domain="binary_sensor", multiple=True)
+        )
     schema[vol.Optional(CONF_AREA, description={"suggested_value": room.get(CONF_AREA)})] = selector.AreaSelector()
     # new rooms get lockout protection, rooms from before it existed keep it off until switched on
     schema[vol.Required(CONF_LOCKOUT, default=bool(room.get(CONF_LOCKOUT, not room)))] = selector.BooleanSelector()
@@ -123,8 +129,10 @@ class ShutterManagerOptionsFlow(OptionsFlow):
             return {CONF_COVERS: "no_cover"}
         if len(room[CONF_COVERS]) > MAX_COVERS:
             return {CONF_COVERS: "too_many_covers"}
-        if not room[CONF_CONTACTS]:
+        if not room[CONF_CONTACTS] and not room[CONF_DOOR_CONTACTS]:
             return {CONF_CONTACTS: "no_contact"}
+        if set(room[CONF_CONTACTS]) & set(room[CONF_DOOR_CONTACTS]):
+            return {CONF_DOOR_CONTACTS: "contact_twice"}
         if any(r[CONF_ROOM_NAME].casefold() == room[CONF_ROOM_NAME].casefold() for r in others):
             return {CONF_ROOM_NAME: "name_exists"}
         # one cover belongs to one room, otherwise two rooms would fight over it
@@ -143,18 +151,40 @@ class ShutterManagerOptionsFlow(OptionsFlow):
         return self.async_show_form(step_id="add_room", data_schema=_room_schema(user_input), errors=errors)
 
     async def async_step_room_positions(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
-        """Vent position per cover (percent open)."""
+        """Vent position per cover (percent open), and the door settings if the room has door contacts."""
         room = self._pending
         numbered = list(enumerate(room[CONF_COVERS], 1))
+        has_door = bool(room[CONF_DOOR_CONTACTS])
         if user_input is not None:
             room[CONF_VENT_POSITIONS] = {c: int(user_input[f"position_{i}"]) for i, c in numbered}
+            if has_door:
+                room[CONF_DOOR_POSITION] = int(user_input[CONF_DOOR_POSITION])
+                chosen = set(user_input.get(CONF_DOOR_COVERS) or [])
+                room[CONF_DOOR_COVERS] = [c for c in room[CONF_COVERS] if c in chosen]
+            else:
+                room[CONF_DOOR_POSITION] = int(room.get(CONF_DOOR_POSITION, DEFAULT_DOOR_POSITION))
+                room[CONF_DOOR_COVERS] = []
             return self._store_room(room)
         current = room.get(CONF_VENT_POSITIONS) or {}
-        schema = {
+        schema: dict[Any, Any] = {
             vol.Required(f"position_{i}", default=int(current.get(c, DEFAULT_VENT_POSITION))): _box(1, 100, 1, "%")
             for i, c in numbered
         }
-        legend = "\n".join(f"{i} = {st.name if (st := self.hass.states.get(c)) else c}" for i, c in numbered)
+        names = {c: st.name if (st := self.hass.states.get(c)) else c for c in room[CONF_COVERS]}
+        if has_door:
+            schema[
+                vol.Required(CONF_DOOR_POSITION, default=int(room.get(CONF_DOOR_POSITION, DEFAULT_DOOR_POSITION)))
+            ] = _box(1, 100, 1, "%")
+            door_covers = [c for c in room.get(CONF_DOOR_COVERS) or [] if c in names]
+            schema[vol.Optional(CONF_DOOR_COVERS, description={"suggested_value": door_covers})] = (
+                selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=[selector.SelectOptionDict(value=c, label=n) for c, n in names.items()],
+                        multiple=True,
+                    )
+                )
+            )
+        legend = "\n".join(f"{i} = {names[c]}" for i, c in numbered)
         return self.async_show_form(
             step_id="room_positions",
             data_schema=vol.Schema(schema),
@@ -193,8 +223,10 @@ class ShutterManagerOptionsFlow(OptionsFlow):
         if user_input is not None:
             room = self._clean_room(user_input, current[CONF_ROOM_ID])
             if not (errors := self._validate(room)):
-                # keep the vent positions of covers that stay in the room
+                # keep the vent positions and door settings of covers that stay in the room
                 room[CONF_VENT_POSITIONS] = current.get(CONF_VENT_POSITIONS) or {}
+                room[CONF_DOOR_COVERS] = current.get(CONF_DOOR_COVERS) or []
+                room[CONF_DOOR_POSITION] = current.get(CONF_DOOR_POSITION, DEFAULT_DOOR_POSITION)
                 self._pending = room
                 return await self.async_step_room_positions()
         return self.async_show_form(
@@ -235,6 +267,7 @@ class ShutterManagerOptionsFlow(OptionsFlow):
             CONF_ROOM_NAME: str(user_input[CONF_ROOM_NAME]).strip(),
             CONF_COVERS: list(user_input.get(CONF_COVERS) or []),
             CONF_CONTACTS: list(user_input.get(CONF_CONTACTS) or []),
+            CONF_DOOR_CONTACTS: list(user_input.get(CONF_DOOR_CONTACTS) or []),
             CONF_AREA: user_input.get(CONF_AREA) or None,
             CONF_LOCKOUT: bool(user_input.get(CONF_LOCKOUT, False)),
         }

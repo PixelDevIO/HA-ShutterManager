@@ -4,7 +4,7 @@ from __future__ import annotations
 
 DOMAIN = "shuttermanager"
 NAME = "ShutterManager"
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 
 CONF_ROOMS = "rooms"
 CONF_ROOM_ID = "id"
@@ -17,8 +17,14 @@ CONF_VENT_POSITIONS = "vent_positions"
 CONF_OPEN_DELAY = "open_delay"
 CONF_CLOSE_DELAY = "close_delay"
 CONF_LOCKOUT = "lockout"
+CONF_DOOR_CONTACTS = "door_contacts"
+CONF_DOOR_COVERS = "door_covers"
+CONF_DOOR_POSITION = "door_position"
 
 DEFAULT_VENT_POSITION = 30
+DEFAULT_DOOR_POSITION = 100
+# vacation plan: each move happens up to this many minutes later, at random
+DEFAULT_VACATION_RANDOM = 15
 DEFAULT_OPEN_DELAY = 3  # seconds a window must be open before the shutters move
 DEFAULT_CLOSE_DELAY = 5  # seconds all windows must be closed before the shutters go back
 
@@ -39,3 +45,9 @@ STORAGE_KEY = DOMAIN
 STORAGE_VERSION = 1
 
 SIGNAL_UPDATE = f"{DOMAIN}_update"
+
+# A room without a profile is left alone by the schedule
+ASSIGN_MANUAL = "manual"
+
+FRONTEND_URL = "/shuttermanager_static"
+CARD_FILENAME = "shuttermanager-card.js"
