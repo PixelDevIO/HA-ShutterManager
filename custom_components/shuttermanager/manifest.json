@@ -1,13 +1,13 @@
 {
   "domain": "shuttermanager",
   "name": "ShutterManager",
+  "after_dependencies": [
+    "lovelace"
+  ],
   "codeowners": [
     "@PixelDevIO"
   ],
   "config_flow": true,
-  "after_dependencies": [
-    "lovelace"
-  ],
   "dependencies": [
     "frontend",
     "http",
