@@ -15,6 +15,7 @@ from .const import (
     CONF_CLOSE_DELAY,
     CONF_CONTACTS,
     CONF_COVERS,
+    CONF_LOCKOUT,
     CONF_OPEN_DELAY,
     CONF_ROOM_ID,
     CONF_ROOM_NAME,
@@ -61,6 +62,8 @@ def _room_schema(room: dict[str, Any] | None = None) -> vol.Schema:
         ),
     }
     schema[vol.Optional(CONF_AREA, description={"suggested_value": room.get(CONF_AREA)})] = selector.AreaSelector()
+    # new rooms get lockout protection, rooms from before it existed keep it off until switched on
+    schema[vol.Required(CONF_LOCKOUT, default=bool(room.get(CONF_LOCKOUT, not room)))] = selector.BooleanSelector()
     return vol.Schema(schema)
 
 
@@ -233,4 +236,5 @@ class ShutterManagerOptionsFlow(OptionsFlow):
             CONF_COVERS: list(user_input.get(CONF_COVERS) or []),
             CONF_CONTACTS: list(user_input.get(CONF_CONTACTS) or []),
             CONF_AREA: user_input.get(CONF_AREA) or None,
+            CONF_LOCKOUT: bool(user_input.get(CONF_LOCKOUT, False)),
         }

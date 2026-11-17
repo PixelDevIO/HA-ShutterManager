@@ -87,6 +87,7 @@ async def setup(hass: HomeAssistant, freezer: FrozenDateTimeFactory):
                     "covers": [LEFT, RIGHT],
                     "contacts": [WINDOW, DOOR],
                     "vent_positions": {LEFT: 30, RIGHT: 30},
+                    "lockout": True,
                     "area": None,
                 }
             ],
@@ -298,3 +299,71 @@ async def test_diagnostics(hass: HomeAssistant, freezer: FrozenDateTimeFactory, 
     diag = await async_get_config_entry_diagnostics(hass, entry)
     assert diag["rooms"][0]["status"] == "venting"
     assert diag["rooms"][0]["vented"][LEFT]["previous"] == 0
+
+
+async def test_lockout_keeps_shutter_up_and_closes_later(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, setup
+) -> None:
+    _, covers, _ = setup
+    await set_contact(hass, DOOR, "on")
+    await tick(hass, freezer, 3)
+    assert covers.summary() == [("set_cover_position", LEFT, 30)]
+    await tick(hass, freezer, 60)
+    # an evening automation closes the right shutter while the door is open
+    cover(hass, RIGHT, 40, "closing")
+    await hass.async_block_till_done()
+    assert covers.calls == [covers.calls[0]]  # still above 30 %
+    cover(hass, RIGHT, 20, "closing")
+    await hass.async_block_till_done()
+    assert covers.summary()[-1] == ("set_cover_position", RIGHT, 30)
+    # it keeps reporting the old movement for a moment: no second command
+    cover(hass, RIGHT, 15, "closing")
+    await hass.async_block_till_done()
+    assert len(covers.calls) == 2
+    assert sorted(hass.states.get(STATUS).attributes["vented_covers"]) == [LEFT, RIGHT]
+
+    await set_contact(hass, DOOR, "off")
+    await tick(hass, freezer, 5)
+    # the automation wanted it closed: done now
+    assert ("set_cover_position", RIGHT, 0) in covers.summary()
+    assert ("set_cover_position", LEFT, 0) in covers.summary()
+
+
+async def test_lockout_remembers_a_stopped_position(hass: HomeAssistant, freezer: FrozenDateTimeFactory, setup) -> None:
+    _, covers, _ = setup
+    await set_contact(hass, DOOR, "on")
+    await tick(hass, freezer, 3)
+    cover(hass, RIGHT, 10, "open")  # set to 10 % in one go
+    await hass.async_block_till_done()
+    assert covers.summary()[-1] == ("set_cover_position", RIGHT, 30)
+    await set_contact(hass, DOOR, "off")
+    await tick(hass, freezer, 5)
+    assert ("set_cover_position", RIGHT, 10) in covers.summary()
+
+
+async def test_lockout_acts_before_the_open_delay(hass: HomeAssistant, freezer: FrozenDateTimeFactory, setup) -> None:
+    _, covers, _ = setup
+    await set_contact(hass, DOOR, "on")
+    cover(hass, RIGHT, 5, "closing")
+    await hass.async_block_till_done()
+    assert covers.summary() == [("set_cover_position", RIGHT, 30)]
+    await set_contact(hass, DOOR, "off")
+    await tick(hass, freezer, 5)
+    assert covers.summary()[-1] == ("set_cover_position", RIGHT, 0)
+
+
+async def test_no_lockout_when_window_closed(hass: HomeAssistant, freezer: FrozenDateTimeFactory, setup) -> None:
+    _, covers, _ = setup
+    cover(hass, RIGHT, 0, "closed")
+    await hass.async_block_till_done()
+    assert covers.calls == []
+
+
+async def test_lockout_off(hass: HomeAssistant, freezer: FrozenDateTimeFactory, setup) -> None:
+    manager, covers, _ = setup
+    manager.rooms["r1"].lockout = False
+    await set_contact(hass, DOOR, "on")
+    await tick(hass, freezer, 3)
+    cover(hass, RIGHT, 0, "closed")
+    await hass.async_block_till_done()
+    assert covers.summary() == [("set_cover_position", LEFT, 30)]
