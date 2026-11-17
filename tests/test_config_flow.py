@@ -29,6 +29,7 @@ async def test_setup_and_add_room(hass: HomeAssistant) -> None:
     assert result["type"] is FlowResultType.CREATE_ENTRY
     room = entry.options["rooms"][0]
     assert room["vent_positions"] == {"cover.a": 25, "cover.b": 40}
+    assert room["lockout"] is True
     await hass.async_block_till_done()
     assert hass.states.get("switch.office_ventilation").state == "on"
 

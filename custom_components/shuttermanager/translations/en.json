@@ -36,11 +36,13 @@
           "name": "Name",
           "covers": "Shutters",
           "contacts": "Window/door contacts",
-          "area": "Area"
+          "area": "Area",
+          "lockout": "Lockout protection"
         },
         "data_description": {
           "covers": "Shutters of this room.",
-          "contacts": "While one of them is open, closed shutters move to their vent position."
+          "contacts": "While one of them is open, closed shutters move to their vent position.",
+          "lockout": "While a contact is open no shutter goes below its vent position, not even by button, app or automation. The command is carried out once all contacts are closed."
         }
       },
       "edit_room": {
@@ -55,11 +57,13 @@
           "name": "Name",
           "covers": "Shutters",
           "contacts": "Window/door contacts",
-          "area": "Area"
+          "area": "Area",
+          "lockout": "Lockout protection"
         },
         "data_description": {
           "covers": "Shutters of this room.",
-          "contacts": "While one of them is open, closed shutters move to their vent position."
+          "contacts": "While one of them is open, closed shutters move to their vent position.",
+          "lockout": "While a contact is open no shutter goes below its vent position, not even by button, app or automation. The command is carried out once all contacts are closed."
         }
       },
       "room_positions": {

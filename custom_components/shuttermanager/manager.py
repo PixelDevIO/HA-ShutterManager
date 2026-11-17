@@ -41,6 +41,7 @@ from .const import (
     CONF_CLOSE_DELAY,
     CONF_CONTACTS,
     CONF_COVERS,
+    CONF_LOCKOUT,
     CONF_OPEN_DELAY,
     CONF_ROOM_ID,
     CONF_ROOM_NAME,
@@ -50,6 +51,7 @@ from .const import (
     DEFAULT_OPEN_DELAY,
     DEFAULT_VENT_POSITION,
     DOMAIN,
+    GUARD_REPEAT_S,
     MOVE_GRACE_S,
     POSITION_TOLERANCE,
     SIGNAL_UPDATE,
@@ -75,6 +77,8 @@ class Room:
     covers: list[str]
     contacts: list[str]
     vent_positions: dict[str, int]
+    # keep shutters at least at their vent position while a contact is open
+    lockout: bool = False
     area: str | None = None
     area_name: str | None = None
 
@@ -154,6 +158,7 @@ class ShutterManager:
                 covers=list(raw.get(CONF_COVERS) or []),
                 contacts=list(raw.get(CONF_CONTACTS) or []),
                 vent_positions={k: int(v) for k, v in (raw.get(CONF_VENT_POSITIONS) or {}).items()},
+                lockout=bool(raw.get(CONF_LOCKOUT, False)),
                 area=raw.get(CONF_AREA),
             )
             if room.area and (area := areas.async_get_area(room.area)):
@@ -357,11 +362,16 @@ class ShutterManager:
 
     @callback
     def _on_cover_event(self, event: Event[EventStateChangedData]) -> None:
-        """A cover that was unavailable is back: catch up on what it missed."""
         old, new = event.data["old_state"], event.data["new_state"]
-        if new is None or new.state in NOT_KNOWN or (old is not None and old.state not in NOT_KNOWN):
+        if new is None or new.state in NOT_KNOWN:
             return
         cover = event.data["entity_id"]
+        if old is not None and old.state not in NOT_KNOWN:
+            for room in self._rooms_with(cover, "covers"):
+                if room.lockout and self.runtime[room.id].enabled and self._contacts_state(room) == STATE_ON:
+                    self._guard(room, cover, new)
+            return
+        # a cover that was unavailable is back: catch up on what it missed
         for room in self._rooms_with(cover, "covers"):
             rt = self.runtime[room.id]
             if not rt.enabled:
@@ -379,6 +389,45 @@ class ShutterManager:
                 continue
             self._save()
             self._notify()
+
+    def _guard(self, room: Room, cover: str, st: State) -> None:
+        """Lockout protection: something moves the cover below its vent position while a contact is open.
+
+        Send it back up and remember where it was meant to go; that happens once all contacts are closed.
+        """
+        rt = self.runtime[room.id]
+        if st.state == STATE_OPENING:
+            return
+        target = room.vent_position(cover)
+        pos = _position(st)
+        if pos is None:
+            if st.state not in (STATE_CLOSED, STATE_CLOSING):
+                return
+        elif pos + POSITION_TOLERANCE >= target:
+            return
+        now = dt_util.now()
+        current = rt.vented.get(cover)
+        if current is not None and now - current.at < timedelta(seconds=GUARD_REPEAT_S):
+            return  # already sent it back up, the cover is still reporting the old movement
+        if pos is None:
+            wanted = None
+        elif st.state == STATE_CLOSING:
+            wanted = 0  # on its way down: where it stops is unknown, closed is what was asked for
+        else:
+            wanted = pos
+        recent = rt.restored.pop(cover, None)
+        if recent is not None and now - recent[1] < timedelta(seconds=MOVE_GRACE_S):
+            # our own return movement, interrupted by the window opening again
+            wanted = recent[0].previous
+        _LOGGER.debug("Lockout protection: keeping %s at %s %%, later %s", cover, target, wanted)
+        rt.vented[cover] = Vented(wanted, target, now)
+        rt.pending.discard(cover)
+        if _supports_position(st):
+            self._call(SERVICE_SET_COVER_POSITION, cover, {ATTR_POSITION: target})
+        else:
+            self._call(SERVICE_OPEN_COVER, cover)
+        self._save()
+        self._notify()
 
     def _call(self, service: str, cover: str, data: dict[str, Any] | None = None) -> None:
         self.hass.async_create_task(
@@ -423,6 +472,7 @@ class ShutterManager:
             "open_contacts": self.open_contacts(room),
             "vented": {c: v.as_dict() for c, v in rt.vented.items()},
             "pending": sorted(rt.pending),
+            "lockout": room.lockout,
             "vent_positions": {c: room.vent_position(c) for c in room.covers},
         }
 

@@ -36,11 +36,13 @@
           "name": "Name",
           "covers": "Rollläden",
           "contacts": "Fenster-/Türkontakte",
-          "area": "Bereich"
+          "area": "Bereich",
+          "lockout": "Aussperrschutz"
         },
         "data_description": {
           "covers": "Rollläden dieses Raums.",
-          "contacts": "Ist einer davon offen, fahren geschlossene Rollläden auf ihre Lüftungsposition."
+          "contacts": "Ist einer davon offen, fahren geschlossene Rollläden auf ihre Lüftungsposition.",
+          "lockout": "Solange ein Kontakt offen ist, fährt kein Rollladen unter seine Lüftungsposition, auch nicht per Taster, App oder Automation. Der Fahrbefehl wird nachgeholt, sobald alle Kontakte zu sind."
         }
       },
       "edit_room": {
@@ -55,11 +57,13 @@
           "name": "Name",
           "covers": "Rollläden",
           "contacts": "Fenster-/Türkontakte",
-          "area": "Bereich"
+          "area": "Bereich",
+          "lockout": "Aussperrschutz"
         },
         "data_description": {
           "covers": "Rollläden dieses Raums.",
-          "contacts": "Ist einer davon offen, fahren geschlossene Rollläden auf ihre Lüftungsposition."
+          "contacts": "Ist einer davon offen, fahren geschlossene Rollläden auf ihre Lüftungsposition.",
+          "lockout": "Solange ein Kontakt offen ist, fährt kein Rollladen unter seine Lüftungsposition, auch nicht per Taster, App oder Automation. Der Fahrbefehl wird nachgeholt, sobald alle Kontakte zu sind."
         }
       },
       "room_positions": {

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 DOMAIN = "shuttermanager"
 NAME = "ShutterManager"
-VERSION = "0.1.1"
+VERSION = "0.2.0"
 
 CONF_ROOMS = "rooms"
 CONF_ROOM_ID = "id"
@@ -16,6 +16,7 @@ CONF_AREA = "area"
 CONF_VENT_POSITIONS = "vent_positions"
 CONF_OPEN_DELAY = "open_delay"
 CONF_CLOSE_DELAY = "close_delay"
+CONF_LOCKOUT = "lockout"
 
 DEFAULT_VENT_POSITION = 30
 DEFAULT_OPEN_DELAY = 3  # seconds a window must be open before the shutters move
@@ -25,6 +26,8 @@ DEFAULT_CLOSE_DELAY = 5  # seconds all windows must be closed before the shutter
 POSITION_TOLERANCE = 3
 # A cover may take this long to reach the position we sent
 MOVE_GRACE_S = 120
+# Lockout protection sends a cover back up at most this often
+GUARD_REPEAT_S = 10
 
 STATUS_IDLE = "idle"
 STATUS_WAITING = "waiting"
