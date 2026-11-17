@@ -4,7 +4,7 @@ from __future__ import annotations
 
 DOMAIN = "shuttermanager"
 NAME = "ShutterManager"
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 
 CONF_ROOMS = "rooms"
 CONF_ROOM_ID = "id"

@@ -29,7 +29,6 @@ class ShutterManagerEntity(Entity):
             model="ShutterManager room",
             suggested_area=room.area_name,
             entry_type=DeviceEntryType.SERVICE,
-            via_device=(DOMAIN, entry_id),
         )
 
     async def async_added_to_hass(self) -> None:
