@@ -1,13 +1,23 @@
 {
   "domain": "shuttermanager",
   "name": "ShutterManager",
-  "codeowners": ["@PixelDevIO"],
+  "after_dependencies": [
+    "lovelace"
+  ],
+  "codeowners": [
+    "@PixelDevIO"
+  ],
   "config_flow": true,
+  "dependencies": [
+    "frontend",
+    "http",
+    "websocket_api"
+  ],
   "documentation": "https://github.com/PixelDevIO/HA-ShutterManager",
   "integration_type": "service",
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/PixelDevIO/HA-ShutterManager/issues",
   "requirements": [],
   "single_config_entry": true,
-  "version": "0.2.0"
+  "version": "0.3.0"
 }

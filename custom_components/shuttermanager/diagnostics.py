@@ -37,4 +37,10 @@ async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: Shutter
                 "contact_states": {c: _state(c) for c in room.contacts},
             }
         )
-    return {"version": VERSION, "options": dict(entry.options), "rooms": rooms}
+    schedule = {
+        "profiles": manager.profiles,
+        "assignments": manager.assignments,
+        "pause": {"active": manager.pause_active, "until": manager.pause_until},
+        "vacation": {"until": manager.vacation_until, "random": manager.vacation_random},
+    }
+    return {"version": VERSION, "options": dict(entry.options), "rooms": rooms, "schedule": schedule}

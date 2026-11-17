@@ -1,0 +1,33 @@
+pause:
+  fields:
+    duration:
+      example: "02:00:00"
+      selector:
+        duration:
+    until:
+      example: "2026-12-24 16:00:00"
+      selector:
+        datetime:
+resume:
+start_vacation:
+  fields:
+    until:
+      required: true
+      example: "2026-12-27 16:00:00"
+      selector:
+        datetime:
+    random:
+      example: 15
+      selector:
+        number:
+          min: 0
+          max: 120
+          unit_of_measurement: min
+end_vacation:
+apply_plan:
+  fields:
+    room:
+      required: true
+      example: "Kinderzimmer"
+      selector:
+        text:

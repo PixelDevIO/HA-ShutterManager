@@ -20,7 +20,9 @@ jobs:
         id: v
         run: echo "version=$(jq -r .version custom_components/shuttermanager/manifest.json)" >> "$GITHUB_OUTPUT"
       - name: Check versions match
-        run: grep -q "^VERSION = \"${{ steps.v.outputs.version }}\"" custom_components/shuttermanager/const.py
+        run: |
+          grep -q "^VERSION = \"${{ steps.v.outputs.version }}\"" custom_components/shuttermanager/const.py
+          grep -q "^const VERSION = \"${{ steps.v.outputs.version }}\";" custom_components/shuttermanager/frontend/shuttermanager-card.js
       - name: Create release if missing
         env:
           GH_TOKEN: ${{ github.token }}
