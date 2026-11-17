@@ -1,0 +1,33 @@
+name: Release
+
+# Creates a GitHub release (tag v<version>) whenever main carries a manifest
+# version that has no release yet. HACS then offers it as an update.
+on:
+  push:
+    branches: [main]
+    paths: [custom_components/shuttermanager/manifest.json]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read version
+        id: v
+        run: echo "version=$(jq -r .version custom_components/shuttermanager/manifest.json)" >> "$GITHUB_OUTPUT"
+      - name: Check versions match
+        run: grep -q "^VERSION = \"${{ steps.v.outputs.version }}\"" custom_components/shuttermanager/const.py
+      - name: Create release if missing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="v${{ steps.v.outputs.version }}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "$tag already released"
+          else
+            gh release create "$tag" --target "$GITHUB_SHA" --title "$tag" --generate-notes
+          fi
