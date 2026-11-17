@@ -4,7 +4,7 @@ from __future__ import annotations
 
 DOMAIN = "shuttermanager"
 NAME = "ShutterManager"
-VERSION = "0.3.0"
+VERSION = "0.3.1"
 
 CONF_ROOMS = "rooms"
 CONF_ROOM_ID = "id"
@@ -16,7 +16,16 @@ CONF_AREA = "area"
 CONF_VENT_POSITIONS = "vent_positions"
 CONF_OPEN_DELAY = "open_delay"
 CONF_CLOSE_DELAY = "close_delay"
-CONF_LOCKOUT = "lockout"
+CONF_LOCKOUT = "lockout"  # until 0.3.0
+# per cover: {cover entity_id: {"contact": entity_id or None (any of the room), "kind": "window"/"door", "position": %}}
+CONF_COVER_SETTINGS = "cover_settings"
+CONF_CONTACT = "contact"
+CONF_KIND = "kind"
+CONF_POSITION = "position"
+KIND_WINDOW = "window"
+KIND_DOOR = "door"
+KINDS = (KIND_WINDOW, KIND_DOOR)
+CONTACT_ANY = "any"
 CONF_DOOR_CONTACTS = "door_contacts"
 CONF_DOOR_COVERS = "door_covers"
 CONF_DOOR_POSITION = "door_position"

@@ -1,6 +1,6 @@
 /* ShutterManager card – weekly shutter plans, vacation plan, rooms and shutters.
  * Served and auto-loaded by the ShutterManager integration. */
-const VERSION = "0.3.0";
+const VERSION = "0.3.1";
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 const PALETTE = ["#f4a340", "#7e8ef1", "#3fb8c9", "#8bc34a", "#e57373", "#ba68c8", "#4db6ac", "#ffb74d"];
 const ICONS = ["mdi:window-shutter", "mdi:window-shutter-open", "mdi:weather-sunny", "mdi:weather-night", "mdi:sofa", "mdi:bed", "mdi:teddy-bear", "mdi:desk", "mdi:briefcase", "mdi:home-export-outline", "mdi:airplane", "mdi:sun-thermometer"];
